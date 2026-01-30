@@ -1,16 +1,16 @@
-# CCM Rust - Custom Configuration Manager
+# CCM - Custom Configuration Manager
 
-A cross-platform CLI tool for managing API configurations, passwords, SSH keys, and generic secrets with military-grade encryption. This is the Rust implementation of CCM with a unified entry model.
+A cross-platform CLI tool for managing API configurations, passwords, SSH keys, and generic secrets with military-grade encryption.
 
-## What's New in v0.9.1
+## Features
 
-**Major Refactoring**: CCM now uses a unified entry model where all entries store environment variable mappings directly. The old type-specific entries (api, password, ssh, secret) have been replaced with a single, flexible entry type.
+**Unified Entry Model**: All entries store environment variable mappings directly. No predefined types - completely customizable for your needs.
 
-**Key Changes**:
-- No more entry types - all entries use the same unified model
-- Entries store environment variable mappings with `SECRET` as placeholder
-- Simpler CLI: `ccm add <name> <secret> --env VAR=VALUE`
-- See "Breaking Changes" below for migration details
+**Key Features**:
+- Single flexible entry type with custom metadata
+- Environment variable mappings with `SECRET` placeholder
+- Simple CLI: `ccm add <name> <secret> --env VAR=VALUE`
+- Cross-platform OS keychain integration
 
 ## Architecture Overview
 
@@ -278,32 +278,6 @@ Authentication is tied to your shell process. The session automatically expires 
 - Secrets encrypted before database storage
 - `SECRET` placeholder in metadata indicates encrypted value location
 
-## Breaking Changes from v0.9.0
-
-### Command Changes
-
-**Old**:
-```bash
-ccm add api my-claude sk-ant-xxx --base-url https://api.anthropic.com
-ccm list --type api
-ccm delete --type password
-```
-
-**New**:
-```bash
-ccm add my-claude sk-ant-xxx --env ANTHROPIC_API_KEY=SECRET --env ANTHROPIC_BASE_URL=https://api.anthropic.com
-ccm list
-ccm delete my-claude
-```
-
-### Database Migration
-
-When you first run v0.9.1, it will automatically:
-1. Detect old schema (with `type` column)
-2. Migrate entries to new format (env var mappings)
-3. Remove `type` column and index
-4. Preserve all existing data
-
 ## Development
 
 ### Running Tests
@@ -341,16 +315,6 @@ src/
 └── utils/               # Utilities (crypto, validation, errors)
 ```
 
-## Migration from TypeScript Version
-
-The Rust version uses a different entry model than the TypeScript version. Data migration requires:
-
-1. Export from TypeScript version using `ccm export -d`
-2. Manually convert entries to new format (env var mappings)
-3. Import into Rust version
-
-Direct database compatibility is not maintained due to the architectural differences.
-
 ## Limitations
 
 ### Platform Limitations
@@ -377,5 +341,4 @@ For security vulnerabilities, please report them privately via GitHub issues.
 
 ## Acknowledgments
 
-- Original TypeScript CCM implementation
 - Rust community for excellent cryptographic libraries
