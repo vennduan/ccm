@@ -1,0 +1,63 @@
+{
+  "version": "1.0.0",
+  "exportedAt": "2024-01-15T10:30:00.000Z",
+  "entries": {
+    "very-long-name-" + "a".repeat(100) + "-truncated": {
+      "type": "password",
+      "metadata": {
+        "username": "user@example.com"
+      },
+      "secret": "long_name_password_123"
+    },
+    "ssh-with-all-fields": {
+      "type": "ssh",
+      "metadata": {
+        "host": "server.example.com",
+        "port": "2222",
+        "user": "admin",
+        "keyType": "rsa"
+      },
+      "notes": "SSH key with custom port and user",
+      "secret": "-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEA2a2j9z8/lXmN3kQ8N6YXh0jKL5mP1oN7qR4sT8uV2wA9xE1Y\n-----END RSA PRIVATE KEY-----"
+    },
+    "api-with-custom-template": {
+      "type": "api",
+      "metadata": {
+        "baseUrl": "https://custom-api.example.com/v2",
+        "model": "custom-model-v1",
+        "tool": "custom-tool",
+        "envVars": ["CUSTOM_API_KEY", "CUSTOM_API_SECRET"],
+        "envTemplate": "custom"
+      },
+      "notes": "Custom API configuration",
+      "secret": "custom_api_key_123456789"
+    },
+    "password-with-all-metadata": {
+      "type": "password",
+      "metadata": {
+        "username": "admin@example.com",
+        "url": "https://admin.example.com",
+        "email": "admin@example.com",
+        "domain": "example.com",
+        "custom_field": "custom_value",
+        "another_field": "another_value"
+      },
+      "notes": "Password entry with extensive metadata",
+      "tags": ["admin", "custom", "metadata"],
+      "secret": "admin_password_with_metadata_123"
+    },
+    "empty-metadata": {
+      "type": "secret",
+      "metadata": {},
+      "notes": "Secret with empty metadata object",
+      "secret": "secret_with_empty_meta_123"
+    },
+    "no-timestamps": {
+      "type": "password",
+      "metadata": {
+        "username": "notimestamp@example.com"
+      },
+      "secret": "no_timestamp_password_123"
+    }
+  }
+}

@@ -1,0 +1,4 @@
+name,url,username,password,notes
+Windows CRLF,https://example.com,user1,pass1,Windows line endings
+Another Entry,https://test.com,user2,pass2,Another line
+Last Entry,https://last.com,user3,pass3,Final entry

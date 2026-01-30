@@ -1,0 +1,88 @@
+[package]
+name = "ccm"
+version = "0.9.1"
+edition = "2021"
+authors = ["CCM Contributors"]
+description = "Custom Configuration Manager - Secure profile and API key manager with AES-256-GCM encryption"
+license = "MIT"
+repository = "https://github.com/ccm-org/ccm"
+keywords = ["cli", "security", "encryption", "secrets-manager", "api"]
+categories = ["command-line-utilities", "cryptography"]
+
+[[bin]]
+name = "ccm"
+path = "src/main.rs"
+
+[dependencies]
+# CLI and argument parsing
+clap = { version = "4.5", features = ["derive", "color"] }
+dialoguer = "0.11"
+colored = "2.1"
+
+# Database
+rusqlite = { version = "0.32", features = ["bundled"] }
+
+# Cryptography
+aes = "0.8"
+aes-gcm = "0.10"
+pbkdf2 = "0.12"
+hmac = "0.12"
+sha2 = "0.10"
+rand = "0.8"
+zeroize = "1.7"
+base64 = "0.21"
+hex = "0.4"
+flate2 = "1.0"
+
+# Validation
+regex = "1.10"
+lazy_static = "1.4"
+
+# Unicode support
+unicode-width = "0.1"
+
+# OS keyring integration
+keyring = "2.3"
+
+# File system
+dirs = "5.0"
+
+# Date/time
+chrono = "0.4"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Async runtime
+tokio = { version = "1.35", features = ["full"] }
+
+# Error handling
+anyhow = "1.0"
+thiserror = "1.0"
+
+# Logging
+log = "0.4"
+env_logger = "0.11"
+
+# Platform-specific dependencies
+[target.'cfg(windows)'.dependencies]
+windows = { version = "0.52", features = ["Win32_Security_Cryptography"] }
+
+[target.'cfg(target_os = "macos")'.dependencies]
+security-framework = "2.9"
+security-framework-sys = "2.9"
+
+[target.'cfg(target_os = "linux")'.dependencies]
+secret-service = "3.0"
+
+[dev-dependencies]
+tempfile = "3.8"
+pretty_assertions = "1.4"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = true
+panic = "abort"

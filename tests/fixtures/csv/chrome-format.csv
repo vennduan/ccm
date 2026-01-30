@@ -1,0 +1,6 @@
+url,username,password,group,note
+https://github.com,user@example.com,ghp_test123,Development,Version control
+https://accounts.google.com,user@gmail.com,google_pass_123,Social,Google services
+https://api.openai.com,api@example.com,sk-1234567890abcdef,API Keys,OpenAI API key
+https://aws.amazon.com,dev@company.com,AWS_ACCESS_KEY_123,Work,AWS credentials
+https://example.com,test@example.com,simple_pass123,Misc,Test site

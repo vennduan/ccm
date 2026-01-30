@@ -1,0 +1,48 @@
+{
+  "version": "1.0.0",
+  "exportedAt": "2024-01-15T10:30:00.000Z",
+  "entries": {
+    "special-chars-password": {
+      "type": "password",
+      "metadata": {
+        "username": "user@example.com",
+        "url": "https://example.com"
+      },
+      "notes": "Special characters: !@#$%^&*()_+-=[]{}|;':\",./<>?",
+      "secret": "P@ssw0rd!#$%^&*()_+-=[]{}|;':\",./<>?`~"
+    },
+    "unicode-test": {
+      "type": "password",
+      "metadata": {
+        "username": "测试@example.com",
+        "url": "https://example.com"
+      },
+      "notes": "测试中文字符、日本語、Français、Deutsch、한국어",
+      "secret": "测试密码🔑𝓗𝓮𝓵𝓵𝓸"
+    },
+    "emoji-entry": {
+      "type": "secret",
+      "metadata": {
+        "description": "Token with emoji"
+      },
+      "notes": "Notes with emojis 🎉✨💯🚀🔐💡📝✅❌⚠️",
+      "secret": "🔑secret_token_123🎉✨💯"
+    },
+    "multiline-notes": {
+      "type": "password",
+      "metadata": {
+        "username": "user@example.com"
+      },
+      "notes": "Line 1\nLine 2\nLine 3\n\nBullet points:\n- Item 1\n- Item 2\n- Item 3",
+      "secret": "multiline_pass_123"
+    },
+    "quotes-in-notes": {
+      "type": "password",
+      "metadata": {
+        "username": "user@example.com"
+      },
+      "notes": "Notes with \"double quotes\" and 'single quotes' and `backticks`",
+      "secret": "\"quoted_password_123\""
+    }
+  }
+}

@@ -1,0 +1,4 @@
+password,name,username,url
+my_secret_123,My Service,user1,https://example.com
+another_password_456,Test Site,user2,https://test.com
+complex_pass!@#,Special Account,admin@example.com,https://admin.example.com

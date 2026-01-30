@@ -1,0 +1,4 @@
+url,username,password,httprealm,formactionorigin,guid
+https://github.com,user@example.com,ghp_test123,GitHub,,,github-uuid-123
+https://accounts.google.com,user@gmail.com,google_pass_123,accounts.google.com,,google-guid-456
+https://example.com,api_user,api_secret_789,API Realm,https://example.com/login,ff-guid-789

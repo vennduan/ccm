@@ -1,0 +1,34 @@
+# Rust
+/target/
+**/*.rs.bk
+*.pdb
+
+# IDE & AI tools
+.cursor/
+.cursorrules/
+.claude/
+.vs/
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# CCM specific - user data
+.ccm/
+*.db
+*.db-shm
+*.db-wal
+ccm-auth-shell-*.json
+
+# CCM specific - local config
+.cargo/
+docs/archive/
+CLAUDE.md
+
+# Test outputs
+*.log

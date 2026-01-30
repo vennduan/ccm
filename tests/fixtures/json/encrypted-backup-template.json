@@ -1,0 +1,6 @@
+{
+  "format": "ccm-backup-v1",
+  "encrypted": true,
+  "algorithm": "AES-256-GCM",
+  "data": "BASE64_ENCODED_ENCRYPTED_DATA_HERE"
+}

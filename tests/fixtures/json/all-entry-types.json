@@ -1,0 +1,170 @@
+{
+  "version": "1.0.0",
+  "exportedAt": "2024-01-15T10:30:00.000Z",
+  "entries": {
+    "api-claude": {
+      "type": "api",
+      "metadata": {
+        "baseUrl": "https://api.anthropic.com",
+        "model": "claude-3-opus-20240229",
+        "tool": "ccm",
+        "envVars": ["ANTHROPIC_API_KEY"],
+        "envTemplate": "claude"
+      },
+      "tags": ["api", "ai"],
+      "notes": "Claude API key",
+      "secret": "sk-ant-api03-1234567890abcdef"
+    },
+    "api-openai": {
+      "type": "api",
+      "metadata": {
+        "baseUrl": "https://api.openai.com/v1",
+        "model": "gpt-4-turbo-preview",
+        "tool": "openai",
+        "envVars": ["OPENAI_API_KEY"],
+        "envTemplate": "openai"
+      },
+      "tags": ["api", "ai", "gpt"],
+      "notes": "OpenAI API key",
+      "secret": "sk-proj-1234567890abcdef"
+    },
+    "api-gemini": {
+      "type": "api",
+      "metadata": {
+        "baseUrl": "https://generativelanguage.googleapis.com/v1beta",
+        "model": "gemini-pro",
+        "tool": "gemini",
+        "envVars": ["GEMINI_API_KEY"],
+        "envTemplate": "gemini"
+      },
+      "tags": ["api", "ai", "google"],
+      "notes": "Google Gemini API key",
+      "secret": "AIzaSyDa9G1234567890abcdef"
+    },
+    "api-github": {
+      "type": "api",
+      "metadata": {
+        "baseUrl": "https://api.github.com",
+        "model": "",
+        "tool": "github",
+        "envVars": ["GITHUB_TOKEN"],
+        "envTemplate": "github"
+      },
+      "tags": ["api", "git", "development"],
+      "notes": "GitHub personal access token",
+      "secret": "ghp_1234567890abcdef"
+    },
+    "api-custom": {
+      "type": "api",
+      "metadata": {
+        "baseUrl": "https://api.custom.com",
+        "model": "custom-model",
+        "tool": "custom",
+        "envVars": ["CUSTOM_API_KEY"],
+        "envTemplate": "custom"
+      },
+      "tags": ["api", "custom"],
+      "notes": "Custom API configuration",
+      "secret": "custom_key_1234567890"
+    },
+    "password-github": {
+      "type": "password",
+      "metadata": {
+        "username": "developer@example.com",
+        "url": "https://github.com",
+        "email": "developer@example.com",
+        "domain": "github.com"
+      },
+      "tags": ["git", "development"],
+      "notes": "GitHub password",
+      "secret": "github_password_123!"
+    },
+    "password-aws": {
+      "type": "password",
+      "metadata": {
+        "username": "admin@company.com",
+        "url": "https://aws.amazon.com",
+        "email": "admin@company.com",
+        "domain": "aws.amazon.com"
+      },
+      "tags": ["cloud", "aws", "work"],
+      "notes": "AWS console password",
+      "secret": "AwsConsolePass!@#123"
+    },
+    "password-netflix": {
+      "type": "password",
+      "metadata": {
+        "username": "binge@example.com",
+        "url": "https://netflix.com",
+        "email": "binge@example.com",
+        "domain": "netflix.com"
+      },
+      "tags": ["entertainment", "streaming"],
+      "notes": "Netflix account",
+      "secret": "NetflixBinge2024!"
+    },
+    "ssh-prod-server": {
+      "type": "ssh",
+      "metadata": {
+        "host": "prod1.example.com",
+        "port": "22",
+        "user": "ubuntu",
+        "keyType": "ed25519"
+      },
+      "tags": ["ssh", "production", "server"],
+      "notes": "Production server 1",
+      "secret": "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAA\n-----END OPENSSH PRIVATE KEY-----"
+    },
+    "ssh-staging-server": {
+      "type": "ssh",
+      "metadata": {
+        "host": "staging.example.com",
+        "port": "2222",
+        "user": "deploy",
+        "keyType": "rsa"
+      },
+      "tags": ["ssh", "staging", "server"],
+      "notes": "Staging server with custom port",
+      "secret": "-----BEGIN RSA PRIVATE KEY-----\nMIIEpAIBAAKCAQEA2a2j\n-----END RSA PRIVATE KEY-----"
+    },
+    "ssh-github": {
+      "type": "ssh",
+      "metadata": {
+        "host": "github.com",
+        "port": "22",
+        "user": "git",
+        "keyType": "ed25519"
+      },
+      "tags": ["ssh", "git", "development"],
+      "notes": "GitHub SSH key",
+      "secret": "-----BEGIN OPENSSH PRIVATE KEY-----\nssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIA\n-----END OPENSSH PRIVATE KEY-----"
+    },
+    "secret-database-url": {
+      "type": "secret",
+      "metadata": {
+        "description": "Production database connection URL"
+      },
+      "tags": ["database", "production", "url"],
+      "notes": "PostgreSQL database URL",
+      "secret": "postgresql://user:pass@localhost:5432/dbname"
+    },
+    "secret-api-token": {
+      "type": "secret",
+      "metadata": {
+        "description": "Slack API token"
+      },
+      "tags": ["api", "slack", "messaging"],
+      "notes": "Slack bot token",
+      "secret": "fake-slack-token-for-testing-only"
+    },
+    "secret-license-key": {
+      "type": "secret",
+      "metadata": {
+        "description": "Software license key"
+      },
+      "tags": ["license", "software"],
+      "notes": "IDE license key",
+      "secret": "ABCDE-12345-FGHIJ-67890-KLMNO-12345"
+    }
+  }
+}

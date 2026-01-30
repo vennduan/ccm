@@ -1,0 +1,6 @@
+name,url,username,password,note
+GitHub,https://github.com,user@example.com,ghp_test123,My GitHub account
+Google Account,https://accounts.google.com,user@gmail.com,google_pass_123,Main Google account
+Amazon,https://amazon.com,shopper@email.com,amzn_shopping99,Shopping account
+Netflix,https://netflix.com,binge@example.com,netflix binge!2024,Streaming service
+Twitter,https://twitter.com,@example_user,tweet_secret_456,Social media

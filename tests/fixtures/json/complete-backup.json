@@ -1,0 +1,73 @@
+{
+  "version": "1.0.0",
+  "exportedAt": "2024-01-15T10:30:00.000Z",
+  "entries": {
+    "claude-api": {
+      "type": "api",
+      "metadata": {
+        "baseUrl": "https://api.anthropic.com",
+        "model": "claude-3-opus-20240229",
+        "tool": "ccm",
+        "envVars": ["ANTHROPIC_API_KEY"],
+        "envTemplate": "claude"
+      },
+      "tags": ["api", "ai", "production"],
+      "notes": "Claude API key for production use",
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-15T10:00:00.000Z",
+      "secret": "sk-ant-api03-1234567890abcdefghijklmnopqrstuvwxyz"
+    },
+    "github-account": {
+      "type": "password",
+      "metadata": {
+        "username": "developer@example.com",
+        "url": "https://github.com"
+      },
+      "tags": ["development", "git"],
+      "notes": "GitHub personal account",
+      "createdAt": "2024-01-05T00:00:00.000Z",
+      "updatedAt": "2024-01-10T00:00:00.000Z",
+      "secret": "ghp_1234567890abcdefghijklmnopqrstuvwxyz123456"
+    },
+    "production-server-ssh": {
+      "type": "ssh",
+      "metadata": {
+        "host": "prod.example.com",
+        "port": "22",
+        "user": "ubuntu",
+        "keyType": "ed25519"
+      },
+      "tags": ["ssh", "production", "server"],
+      "notes": "Production server SSH key",
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z",
+      "secret": "-----BEGIN OPENSSH PRIVATE KEY-----\nb3BlbnNzaC1rZXktdjEAAAAABG5vbmUAAAAAAEmAjQAAAABtzL4nZWq20gH8AAAD9yW06\njK5JCE8p7YrIqcXLTVZLqdCEMqRKhWEvMZHLNHtPPAQAAAABA8NbXQKXg1tcCl8AAAAB\nA2kqKHqYs7KvYGDVDLQp5y6zTkHdHuCoCqKWRxYrJdHqixlmTFMCsfOUqVpCjKVkAAAD9\nyW06jK5JCE8p7YrIqcXLTVZLqdCEMqRKhWEvMZHLNHtPPAQAAAAtzc2gtZWQyNTUxOQAA\nACFwNLlL7eLmYqJYcQYpJYfJYfJYfJYfJYfJYfJYfJYfJYfJYfJYcQYpJYcQYpJYQAAAA==\n-----END OPENSSH PRIVATE KEY-----"
+    },
+    "openai-api": {
+      "type": "api",
+      "metadata": {
+        "baseUrl": "https://api.openai.com/v1",
+        "model": "gpt-4-turbo",
+        "tool": "openai",
+        "envVars": ["OPENAI_API_KEY"],
+        "envTemplate": "openai"
+      },
+      "tags": ["api", "ai", "gpt"],
+      "notes": "OpenAI API key",
+      "createdAt": "2024-01-10T00:00:00.000Z",
+      "updatedAt": "2024-01-10T00:00:00.000Z",
+      "secret": "sk-proj-AbCdEf1234567890abcdefghijklmnopqrstuvwxyz"
+    },
+    "database-token": {
+      "type": "secret",
+      "metadata": {
+        "description": "Database connection token"
+      },
+      "tags": ["database", "token"],
+      "notes": "PostgreSQL database connection token",
+      "createdAt": "2024-01-12T00:00:00.000Z",
+      "updatedAt": "2024-01-12T00:00:00.000Z",
+      "secret": "postgres_token_abc123def456ghi789jkl012mno345pqr"
+    }
+  }
+}

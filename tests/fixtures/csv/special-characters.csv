@@ -1,0 +1,9 @@
+name,url,username,password,notes
+"Site with, comma",https://example.com,user1,pass1,"Note with, comma"
+"Site with ""quotes""",https://test.com,user2,pass2,"Note with ""quotes"""
+"Site with emoji 🎉",https://emoji.com,😀user😀,🔑pass🔑,"Notes with emoji! ✨"
+"Site with newline
+break",https://newline.com,user3,pass3,"Line 1
+Line 2
+Line 3"
+"Special: !@#$%^&*()",https://special.com,user!@#,pass!@#$,"Note: &*()_+-=[]{}|;':"",./<>?"

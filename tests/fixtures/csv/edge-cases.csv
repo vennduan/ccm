@@ -1,0 +1,11 @@
+name,url,username,password,notes
+Empty Password Field,https://example.com,user1,,Password is empty
+Empty Username,https://test.com,,pass123,Username is empty
+Empty URL,username_exists,passuser,Only name and username
+Empty Notes,https://no-notes.com,user_nonote,pass789,
+Long Password Field,https://long.com,longuser,A_very_long_password_that_exceeds_normal_length_and_contains_special_chars_1234567890!@#$%^&*(),Long password test
+Name With Spaces (Converted),https://spaces.com,user_spaces,pass_spaces,Name has spaces
+Name@With#Special$Chars,https://special.com,user_special,pass_special,Name has special characters
+Uppercase NAME,https://uppercase.com,USER_UPPERCASE,PASS_UPPERCASE,All uppercase
+Multiple---Hyphens,https://hyphens.com,user_hyphens,pass_hyphens,Multiple hyphens
+_name_underscores_,https://underscores.com,user_score,pass_score,Underscores everywhere

@@ -1,0 +1,9 @@
+name,url,username,password,notes
+测试账户,https://example.com,测试用户@example.com,测试密码🔑,这是一个测试账户
+GitHub日本,https://github.com,ユーザー@example.jp,パスワード123,日本語のノート
+Compte Français,https://example.fr,utilisateur@exemple.fr,mot_de_passe_123,Note en français
+Deutsch Konto,https://example.de,benutzer@beispiel.de,passwort_456,Notiz auf Deutsch
+한국계정,https://example.kr,사용자@example.kr,비밀번호789,한국어 메모
+РусскийАккаунт,https://example.ru,пользователь@example.рф,пароль_123,Заметка на русском
+العربية,https://example.ae,مستخدم@example.ae,كلمة_المرور,ملاحظة بالعربية
+Emoji Test 🔐,https://emoji-test.com,👤user🔐,🔐pass🔑,Notes with emojis 🎉✨💯
