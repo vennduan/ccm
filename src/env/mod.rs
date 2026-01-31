@@ -4,6 +4,9 @@ use crate::types::Entry;
 use crate::utils::Result;
 use std::collections::HashMap;
 
+#[cfg(unix)]
+use std::path::PathBuf;
+
 /// Set environment variables for an entry
 pub fn set_env_for_entry(name: &str, entry: &Entry, quiet: bool) -> Result<()> {
     // Get all environment variable mappings from metadata
@@ -163,8 +166,7 @@ fn set_env_unix(env_vars: &HashMap<String, String>, quiet: bool) -> Result<()> {
 
 /// Detect the appropriate shell config file
 #[cfg(unix)]
-fn detect_shell_config() -> Result<std::path::PathBuf> {
-    use std::path::PathBuf;
+fn detect_shell_config() -> Result<PathBuf> {
 
     let home = dirs::home_dir().ok_or_else(|| {
         crate::utils::CcmError::Unknown("Cannot determine home directory".to_string())

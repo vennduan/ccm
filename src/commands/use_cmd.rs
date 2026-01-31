@@ -6,6 +6,9 @@ use crate::utils::Result;
 use crate::Commands;
 use colored::Colorize;
 
+#[cfg(unix)]
+use std::path::PathBuf;
+
 pub async fn execute(command: Commands) -> Result<()> {
     if let Commands::Use { name, quiet } = command {
         do_use(&name, quiet)
@@ -81,7 +84,6 @@ fn set_env_windows(env_vars: &std::collections::HashMap<String, String>, quiet: 
 fn set_env_unix(env_vars: &std::collections::HashMap<String, String>, quiet: bool) -> Result<()> {
     use std::fs::OpenOptions;
     use std::io::Write;
-    use std::path::PathBuf;
 
     // Determine shell config file
     let shell_config = detect_shell_config()?;
