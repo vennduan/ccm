@@ -25,16 +25,24 @@
 
 ### 安全架构
 
+CCM 实现**强大的应用层加密**：
+
 1. **密钥层**：所有密钥在存储前使用 AES-256-GCM 加密
 2. **主密钥保护**：PIN 派生密钥（PBKDF2-SHA256，200,000 次迭代）或 ZERO_KEY
 3. **操作系统密钥链**：主密钥存储在操作系统密钥链中（Windows DPAPI、macOS Keychain、Linux libsecret）
-4. **数据库**：纯 SQLite 用于元数据存储（密钥已预加密）
+4. **数据库**：SQLite 用于元数据存储（密钥已预加密）
+
+**注意**：CCM 使用**双重加密**：
+1. **数据库级别**：SQLCipher 使用从主密钥派生的密钥加密整个数据库文件
+2. **字段级别**：单个密钥在存储前额外使用 AES-256-GCM 加密
+
+这提供了纵深防御：即使数据库加密被破解，密钥仍受应用层加密保护。
 
 ### 核心模块
 
 - `types/` - 统一条目类型定义
 - `core/` - 统一初始化层
-- `db/` - 数据库操作（纯 SQLite）
+- `db/` - 数据库操作（使用 bundled SQLite）
 - `secrets/` - 密钥 CRUD 操作和主密钥管理
 - `auth/` - 身份验证和 PIN 管理
 - `env/` - 环境变量管理（平台特定）
@@ -60,9 +68,74 @@ tests\scripts\test.bat
 #### 前置要求
 
 - Rust 1.70 或更高版本
-- Windows：无额外依赖
-- macOS：无额外依赖
-- Linux：需要 `libsecret` 支持密钥环（`sudo apt-get install libsecret-1-dev`）
+- **Windows**：SQLCipher 静态库（参见 [Windows 构建指南](#windows-sqlcipher-构建)）
+- **macOS**：无额外依赖
+- **Linux**：需要 `libsecret` 支持密钥环（`sudo apt-get install libsecret-1-dev`）
+
+#### Windows SQLCipher 构建
+
+Windows 构建需要预编译的 SQLCipher 静态库：
+
+1. **安装 vcpkg 和 OpenSSL**：
+   ```cmd
+   git clone https://github.com/Microsoft/vcpkg.git
+   cd vcpkg
+   .\bootstrap-vcpkg.bat
+   .\vcpkg install openssl:x64-windows-static-md
+   ```
+
+2. **克隆并构建 SQLCipher**：
+   ```cmd
+   git clone https://github.com/sqlcipher/sqlcipher.git
+   cd sqlcipher
+   ```
+
+3. **创建构建脚本** (`compile_static.bat`)：
+   ```batch
+   @echo off
+   
+   REM 复制静态 OpenSSL
+   if not exist openssl_static mkdir openssl_static
+   xcopy /E /I /Y ..\vcpkg\packages\openssl_x64-windows-static-md\include openssl_static\include
+   xcopy /E /I /Y ..\vcpkg\packages\openssl_x64-windows-static-md\lib openssl_static\lib
+   
+   REM 创建桩函数
+   echo int sqlcipher_extra_init(const char *arg) { (void)arg; return 0; } > sqlcipher_extra.c
+   echo int sqlcipher_extra_shutdown(void) { return 0; } >> sqlcipher_extra.c
+   
+   REM 编译桩函数
+   cl -nologo -W4 -DINCLUDE_MSVC_H=1 -DSQLITE_OS_WIN=1 -I. -I.\src -fp:precise -MT -DNDEBUG -D_CRT_SECURE_NO_DEPRECATE -D_CRT_SECURE_NO_WARNINGS -O2 -c sqlcipher_extra.c -Fosqlcipher_extra.obj
+   
+   REM 首先构建 SQLite 合并文件
+   nmake /f Makefile.msc sqlite3.c
+   
+   REM 编译带 SQLCipher 支持的 SQLite
+   cl -nologo -W4 -DINCLUDE_MSVC_H=1 -DSQLITE_OS_WIN=1 -I. -I.\src -fp:precise -DSQLITE_HAS_CODEC -DSQLITE_TEMP_STORE=2 -I"openssl_static\include" -MT -DNDEBUG -D_CRT_SECURE_NO_DEPRECATE -D_CRT_SECURE_NO_WARNINGS -O2 -c sqlite3.c -Fosqlite3.lo
+   
+   REM 创建静态库
+   lib.exe /NOLOGO /OUT:sqlite3_static.lib sqlite3.lo sqlcipher_extra.obj openssl_static\lib\libcrypto.lib openssl_static\lib\libssl.lib
+   
+   echo 成功！sqlite3_static.lib 已创建
+   ```
+
+4. **在开发者命令提示符中构建**：
+   ```cmd
+   "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
+   compile_static.bat
+   ```
+
+5. **配置构建路径**：
+   ```cmd
+   copy .cargo\config.toml.example .cargo\config.toml
+   ```
+   
+   编辑 `.cargo/config.toml` 并修改 SQLCipher 路径：
+   ```toml
+   rustflags = [
+       "-L", "C:/path/to/sqlcipher",  # 修改这一行
+       ...
+   ]
+   ```
 
 #### 构建命令
 

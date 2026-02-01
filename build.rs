@@ -1,20 +1,33 @@
 use std::env;
 
 fn main() {
-    println!("cargo:rerun-if-changed=build.rs");
+    // Windows SQLCipher with pre-built static libraries
+    // Libraries are in project root: lib/ and include/
+    // See docs/vcpkg-openssl-static-linking.md for build instructions
 
-    // Check for SQLCipher
-    let target_os = env::var("CARGO_CFG_TARGET_OS").unwrap();
+    #[cfg(all(windows, target_env = "msvc"))]
+    {
+        // Get project root directory
+        let manifest_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
 
-    if target_os == "windows" {
-        // On Windows, we use bundled SQLite with SQLCipher
-        println!("cargo:rustc-link-lib=sqlite3");
-    } else if target_os == "macos" {
-        // On macOS, check for SQLCipher via Homebrew
-        println!("cargo:rustc-link-search=/usr/local/opt/sqlcipher/lib");
-        println!("cargo:rustc-link-lib=sqlcipher");
-    } else if target_os == "linux" {
-        // On Linux, try to find SQLCipher in common locations
-        println!("cargo:rustc-link-lib=sqlcipher");
+        // Link OpenSSL libraries (order matters - libssl depends on libcrypto)
+        println!("cargo:rustc-link-lib=static=libcrypto");
+        println!("cargo:rustc-link-lib=static=libssl");
+
+        // Windows system libraries that OpenSSL depends on
+        println!("cargo:rustc-link-lib=ws2_32");
+        println!("cargo:rustc-link-lib=gdi32");
+        println!("cargo:rustc-link-lib=advapi32");
+        println!("cargo:rustc-link-lib=crypt32");
+        println!("cargo:rustc-link-lib=user32");
+
+        // Add library search path (project root/lib/)
+        println!("cargo:rustc-link-search={}/lib", manifest_dir);
+
+        // Also search project root for sqlite3_static.lib
+        println!("cargo:rustc-link-search={}", manifest_dir);
+
+        // For debugging: print the paths being used
+        println!("cargo:warning=SQLCipher lib dir: {}/lib", manifest_dir);
     }
 }

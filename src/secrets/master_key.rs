@@ -86,15 +86,37 @@ pub fn check_os_secret_service_available() -> Result<()> {
     }
 }
 
-/// Get instance ID from database config
-pub fn get_instance_id_from_config() -> Result<Option<String>> {
-    // Try to read from database
-    let db_result = crate::db::get_database();
-    if let Ok(db) = db_result {
-        if let Ok(Some(instance_id)) = db.get_setting::<String>("secretInstanceId") {
+/// Direct database access to avoid circular dependency with get_database()
+pub fn get_instance_id_from_config() ->
+Result<Option<String>> {
+    use rusqlite::Connection;
+
+    let db_path = crate::db::db_path();
+
+    // Only proceed if database file exists
+    if !db_path.exists() {
+        return Ok(None);
+    }
+
+    let conn = Connection::open(&db_path)?;
+
+    // Try to read instance_id directly from settings table 
+    let result = conn
+        .query_row(
+            "SELECT value FROM settings WHERE key =
+'secretInstanceId' LIMIT 1",
+            [],
+            |row| row.get::<_, String>(0))
+        .ok();
+
+    // Parse JSON if needed (settings are stored as JSON)   
+    if let Some(raw_value) = result {
+        if let Ok(instance_id) =
+serde_json::from_str::<String>(&raw_value) {
             return Ok(Some(instance_id));
         }
     }
+
     Ok(None)
 }
 
@@ -310,10 +332,20 @@ pub fn generate_and_save_master_key() -> Result<[u8; 32]> {
         Some(id) => id,
         None => {
             let new_id = generate_instance_id();
-            // Save instance ID to database
-            if let Ok(db) = crate::db::get_database() {
-                let _ = db.save_setting("secretInstanceId", &new_id);
-                let _ = db.save_setting("masterKeyInKeychain", &true);
+             // Save instance ID directly to database (avoiding get_database circular dependency)
+            use rusqlite::Connection;
+            let db_path = crate::db::db_path();
+            if let Ok(conn) = Connection::open(&db_path) {
+                let _ = conn.execute(
+                    "INSERT OR REPLACE INTO settings (key, value,       
+            updated_at) VALUES (?1, ?2, ?3)",
+                    rusqlite::params![
+                        "secretInstanceId",
+          
+            serde_json::to_string(&new_id).unwrap_or_default(),
+                        chrono::Utc::now().to_rfc3339()
+                    ]
+                );
             }
             new_id
         }

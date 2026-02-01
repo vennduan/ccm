@@ -3,29 +3,45 @@
 
 use crate::db::get_database;
 use crate::utils::{CcmError, Result};
+use keyring;
 
 /// PIN hash storage key in database (matches TypeScript's "pinHash")
 const PIN_HASH_KEY: &str = "pinHash";
 /// PIN salt storage key in database (matches TypeScript's "pinSalt")
 const PIN_SALT_KEY: &str = "pinSalt";
+/// Keychain entry name for PIN set flag
+const PIN_SET_FLAG: &str = "ccm-pin-set";
 
-/// Check if a PIN is set (matches TypeScript - both pinHash and pinSalt must exist)
+/// Check if a PIN is set
+/// Uses OS keychain to avoid circular dependency with Database::new()
+/// (get_cached_master_key needs has_pin, has_pin needs Database -> circular!)
 pub fn has_pin() -> Result<bool> {
-    let db = get_database()?;
+    // Check OS keychain directly - no database access needed
+    let entry = keyring::Entry::new("ccm", PIN_SET_FLAG)?;
 
-    let hash_exists = match db.get_setting::<String>(PIN_HASH_KEY) {
-        Ok(Some(_)) => true,
-        Ok(None) => false,
-        Err(e) => return Err(e),
-    };
+    match entry.get_password() {
+        Ok(_) => Ok(true),   // Flag exists = PIN is set
+        Err(keyring::Error::NoEntry) => Ok(false),  // No flag = no PIN
+        Err(e) => Err(CcmError::Unknown(format!("Failed to check PIN status: {}", e))),
+    }
+}
 
-    let salt_exists = match db.get_setting::<String>(PIN_SALT_KEY) {
-        Ok(Some(_)) => true,
-        Ok(None) => false,
-        Err(e) => return Err(e),
-    };
+/// Set the PIN set flag in keychain (called when PIN is created)
+fn set_pin_flag() -> Result<()> {
+    let entry = keyring::Entry::new("ccm", PIN_SET_FLAG)?;
+    entry
+        .set_password("1")
+        .map_err(|e| CcmError::Unknown(format!("Failed to set PIN flag: {}", e)))?;
+    Ok(())
+}
 
-    Ok(hash_exists && salt_exists)
+/// Clear the PIN set flag from keychain (called when PIN is removed)
+fn clear_pin_flag() -> Result<()> {
+    let entry = keyring::Entry::new("ccm", PIN_SET_FLAG)?;
+    entry
+        .delete_password()
+        .map_err(|e| CcmError::Unknown(format!("Failed to clear PIN flag: {}", e)))?;
+    Ok(())
 }
 
 /// Set a new PIN (hashed and stored in database)
@@ -64,6 +80,9 @@ pub fn set_pin(pin: &str) -> Result<()> {
     // Store both hash and salt
     db.save_setting(PIN_HASH_KEY, &hash_hex)?;
     db.save_setting(PIN_SALT_KEY, &salt_hex)?;
+
+    // Set flag in keychain (for has_pin() check without database access)
+    set_pin_flag()?;
 
     Ok(())
 }
@@ -147,6 +166,9 @@ pub fn remove_pin(pin: &str) -> Result<()> {
     let db = get_database()?;
     db.delete_setting(PIN_HASH_KEY)?;
     db.delete_setting(PIN_SALT_KEY)?;
+
+    // Clear flag from keychain
+    clear_pin_flag()?;
 
     Ok(())
 }

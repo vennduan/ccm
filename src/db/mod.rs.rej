@@ -1,0 +1,16 @@
+--- src/db/mod.rs
++++ src/db/mod.rs
+@@ -40,11 +40,8 @@ impl Database {
+             std::fs::create_dir_all(parent)?;
+         }
+ 
+-        #[cfg(unix)]
+-        {
+-            Self::new_sqlcipher(path)
+-        }
+-
++        // Temporarily disable SQLCipher to avoid circular dependency
++        // TODO: Re-enable after fixing has_pin() circular dependency
+         #[cfg(windows)]
+         {
+             Self::new_sqlite(path)

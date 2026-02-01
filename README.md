@@ -25,16 +25,24 @@ All entries now follow the same structure:
 
 ### Security Architecture
 
+CCM implements **strong application-layer encryption**:
+
 1. **Secret Layer**: AES-256-GCM encryption for all secrets before storage
 2. **Master Key Protection**: PIN-derived key (PBKDF2-SHA256, 200,000 iterations) or ZERO_KEY
 3. **OS Keychain**: Master key stored in OS keychain (Windows DPAPI, macOS Keychain, Linux libsecret)
-4. **Database**: Plain SQLite for metadata storage (secrets are pre-encrypted)
+4. **Database**: SQLite for metadata storage (secrets are pre-encrypted)
+
+**Note**: CCM uses **dual-layer encryption**:
+1. **Database-level**: SQLCipher encrypts the entire database file with a key derived from the master key
+2. **Field-level**: Individual secrets are additionally encrypted with AES-256-GCM before storage
+
+This provides defense-in-depth: even if the database encryption is compromised, secrets remain protected by application-layer encryption.
 
 ### Core Modules
 
 - `types/` - Unified entry type definitions
 - `core/` - Unified initialization layer
-- `db/` - Database operations (plain SQLite)
+- `db/` - Database operations (SQLite with bundled rusqlite)
 - `secrets/` - Secret CRUD operations and master key management
 - `auth/` - Authentication and PIN management
 - `env/` - Environment variable management (platform-specific)
@@ -60,9 +68,74 @@ tests\scripts\test.bat
 #### Prerequisites
 
 - Rust 1.70 or later
-- Windows: No additional dependencies
-- macOS: No additional dependencies
-- Linux: `libsecret` for keyring support (`sudo apt-get install libsecret-1-dev`)
+- **Windows**: SQLCipher static library (see [Windows Build Guide](#windows-sqlcipher-build))
+- **macOS**: No additional dependencies
+- **Linux**: `libsecret` for keyring support (`sudo apt-get install libsecret-1-dev`)
+
+#### Windows SQLCipher Build
+
+Windows builds require a pre-compiled SQLCipher static library:
+
+1. **Install vcpkg and OpenSSL**:
+   ```cmd
+   git clone https://github.com/Microsoft/vcpkg.git
+   cd vcpkg
+   .\bootstrap-vcpkg.bat
+   .\vcpkg install openssl:x64-windows-static-md
+   ```
+
+2. **Clone and build SQLCipher**:
+   ```cmd
+   git clone https://github.com/sqlcipher/sqlcipher.git
+   cd sqlcipher
+   ```
+
+3. **Create build script** (`compile_static.bat`):
+   ```batch
+   @echo off
+   
+   REM Copy static OpenSSL
+   if not exist openssl_static mkdir openssl_static
+   xcopy /E /I /Y ..\vcpkg\packages\openssl_x64-windows-static-md\include openssl_static\include
+   xcopy /E /I /Y ..\vcpkg\packages\openssl_x64-windows-static-md\lib openssl_static\lib
+   
+   REM Create stub functions
+   echo int sqlcipher_extra_init(const char *arg) { (void)arg; return 0; } > sqlcipher_extra.c
+   echo int sqlcipher_extra_shutdown(void) { return 0; } >> sqlcipher_extra.c
+   
+   REM Compile stub
+   cl -nologo -W4 -DINCLUDE_MSVC_H=1 -DSQLITE_OS_WIN=1 -I. -I.\src -fp:precise -MT -DNDEBUG -D_CRT_SECURE_NO_DEPRECATE -D_CRT_SECURE_NO_WARNINGS -O2 -c sqlcipher_extra.c -Fosqlcipher_extra.obj
+   
+   REM Build SQLite amalgamation first
+   nmake /f Makefile.msc sqlite3.c
+   
+   REM Compile SQLite with SQLCipher support
+   cl -nologo -W4 -DINCLUDE_MSVC_H=1 -DSQLITE_OS_WIN=1 -I. -I.\src -fp:precise -DSQLITE_HAS_CODEC -DSQLITE_TEMP_STORE=2 -I"openssl_static\include" -MT -DNDEBUG -D_CRT_SECURE_NO_DEPRECATE -D_CRT_SECURE_NO_WARNINGS -O2 -c sqlite3.c -Fosqlite3.lo
+   
+   REM Create static library
+   lib.exe /NOLOGO /OUT:sqlite3_static.lib sqlite3.lo sqlcipher_extra.obj openssl_static\lib\libcrypto.lib openssl_static\lib\libssl.lib
+   
+   echo Success! sqlite3_static.lib created
+   ```
+
+4. **Build in Developer Command Prompt**:
+   ```cmd
+   "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Auxiliary\Build\vcvars64.bat"
+   compile_static.bat
+   ```
+
+5. **Configure build path**:
+   ```cmd
+   copy .cargo\config.toml.example .cargo\config.toml
+   ```
+   
+   Edit `.cargo/config.toml` and change the SQLCipher path:
+   ```toml
+   rustflags = [
+       "-L", "C:/path/to/sqlcipher",  # Change this line
+       ...
+   ]
+   ```
 
 #### Build Commands
 

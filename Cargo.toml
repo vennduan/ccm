@@ -19,8 +19,6 @@ clap = { version = "4.5", features = ["derive", "color"] }
 dialoguer = "0.11"
 colored = "2.1"
 
-# Database
-rusqlite = { version = "0.32", features = ["bundled"] }
 
 # Cryptography
 aes = "0.8"
@@ -66,8 +64,15 @@ log = "0.4"
 env_logger = "0.11"
 
 # Platform-specific dependencies
+# Windows: use bundled-sqlcipher-vendored-openssl
+# Pre-built OpenSSL libraries are configured in build.rs
+# See docs/vcpkg-openssl-static-linking.md for build instructions
 [target.'cfg(windows)'.dependencies]
+rusqlite = { version = "0.32", features = ["bundled-sqlcipher-vendored-openssl"] }
 windows = { version = "0.52", features = ["Win32_Security_Cryptography"] }
+
+[target.'cfg(unix)'.dependencies]
+rusqlite = { version = "0.32", features = ["bundled-sqlcipher-vendored-openssl"] }
 
 [target.'cfg(target_os = "macos")'.dependencies]
 security-framework = "2.9"

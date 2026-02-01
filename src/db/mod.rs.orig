@@ -1,5 +1,6 @@
-// Database layer with SQLCipher encryption
-// All platforms use SQLCipher for database-level encryption
+// Database layer with optional SQLCipher encryption
+// - Unix: SQLCipher database-level encryption with master key derivation
+// - Windows: Standard SQLite with application-layer encryption (secrets are pre-encrypted)
 
 pub mod migration;
 
@@ -20,7 +21,9 @@ pub fn db_path() -> PathBuf {
     db_dir().join("ccm.db")
 }
 
-/// Database wrapper with SQLCipher encryption
+/// Database wrapper
+/// On Unix: Database is encrypted with AES-256 using a key derived from the master key (SQLCipher)
+/// On Windows: Uses standard SQLite (secrets are encrypted at application layer)
 pub struct Database {
     conn: Arc<Mutex<Connection>>,
     path: PathBuf,
@@ -36,29 +39,38 @@ impl Database {
             std::fs::create_dir_all(parent)?;
         }
 
-        Self::new_sqlcipher(path)
+        #[cfg(unix)]
+        {
+            Self::new_sqlcipher(path)
+        }
+
+        #[cfg(windows)]
+        {
+            Self::new_sqlite(path)
+        }
     }
 
-    /// Create database with SQLCipher encryption
+    /// Create database with SQLCipher encryption (Unix only)
+    #[cfg(unix)]
     fn new_sqlcipher(path: PathBuf) -> Result<Self> {
         use crate::secrets::master_key::get_cached_master_key;
 
         // Get master key for database encryption
-        // Note: has_pin() now uses OS keychain, so no circular dependency
         let master_key = get_cached_master_key()
-            .map_err(|e| CcmError::Unknown(format!("Failed to get master key: {}. Please run 'ccm auth set' first.", e)))?;
+            .map_err(|e| CcmError::Unknown(format!("Failed to get master key: {}. Please run 'ccm auth on' first.", e)))?;
 
-        // Derive database encryption key from master key (64 hex chars)
+        // Derive database encryption key from master key (use first 32 bytes as hex for SQLCipher)
         let db_key = hex::encode(&master_key);
 
         // Open connection
         let conn = Connection::open(&path)?;
 
         // Set encryption key BEFORE any other operations
+        // This must be the first pragma executed on a new connection
         conn.pragma_update(None, "key", &db_key)
             .map_err(|e| CcmError::Unknown(format!("Failed to set database encryption key: {}", e)))?;
 
-        // Check if database is newly created
+        // Verify the database is accessible (wrong key will cause error)
         let is_new_db = conn
             .prepare("SELECT count(*) FROM sqlite_master")
             .and_then(|mut stmt| stmt.query_row([], |row| row.get::<_, i64>(0)))
@@ -74,8 +86,22 @@ impl Database {
         Ok(db)
     }
 
+    /// Create database with standard SQLite (Windows fallback)
+    #[cfg(windows)]
+    fn new_sqlite(path: PathBuf) -> Result<Self> {
+        let conn = Connection::open(&path)?;
 
-    /// Initialize database schema with SQLCipher settings
+        let db = Self {
+            conn: Arc::new(Mutex::new(conn)),
+            path,
+        };
+
+        db.init_schema_sqlite()?;
+        Ok(db)
+    }
+
+    /// Initialize database schema with SQLCipher settings (Unix)
+    #[cfg(unix)]
     fn init_schema_sqlcipher(&self, is_new_db: bool) -> Result<()> {
         let conn = self
             .conn
@@ -101,7 +127,22 @@ impl Database {
         Ok(())
     }
 
-    /// Initialize database tables (shared)
+    /// Initialize database schema with standard SQLite (Windows)
+    #[cfg(windows)]
+    fn init_schema_sqlite(&self) -> Result<()> {
+        let conn = self
+            .conn
+            .lock()
+            .map_err(|e| CcmError::Unknown(e.to_string()))?;
+
+        // Enable WAL mode
+        conn.pragma_update(None, "journal_mode", "WAL")?;
+
+        self.init_tables(&conn)?;
+        Ok(())
+    }
+
+    /// Initialize database tables (shared between Unix and Windows)
     fn init_tables(&self, conn: &Connection) -> Result<()> {
         // Check if we need to migrate from old schema
         let needs_migration = conn
@@ -129,7 +170,7 @@ impl Database {
 
             if has_type_column {
                 // Run migration to remove type column
-                self.migrate_remove_type_column(&conn)?;
+                self.migrate_remove_type_column(conn)?;
             }
         }
 
@@ -197,7 +238,6 @@ impl Database {
         )?;
 
         // 2. Copy data from old table to new table
-        // We need to convert old type-specific metadata to env var mappings
         tx.execute(
             "INSERT INTO entries_new (name, metadata, tags, notes, created_at, updated_at)
              SELECT name, metadata, tags, notes, created_at, updated_at FROM entries",

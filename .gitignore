@@ -25,10 +25,14 @@ Thumbs.db
 *.db-wal
 ccm-auth-shell-*.json
 
-# CCM specific - local config
-.cargo/
+.cargo/config.toml
 docs/archive/
 CLAUDE.md
 
+# CCM specific - Windows static libraries (too large for git)
+# See docs/vcpkg-openssl-static-linking.md for how to obtain these
+/lib/
+/include/
+
 # Test outputs
-*.log
+*.log.env

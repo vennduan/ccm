@@ -1,5 +1,6 @@
-// Database layer with SQLCipher encryption
-// All platforms use SQLCipher for database-level encryption
+// Database layer with platform-specific encryption
+// - Unix: SQLCipher database-level encryption with master key derivation
+// - Windows: Standard SQLite (application-layer encryption for secrets)
 
 pub mod migration;
 
@@ -20,7 +21,9 @@ pub fn db_path() -> PathBuf {
     db_dir().join("ccm.db")
 }
 
-/// Database wrapper with SQLCipher encryption
+/// Database wrapper
+/// On Unix: Encrypted with SQLCipher using master key
+/// On Windows: Standard SQLite (secrets are pre-encrypted)
 pub struct Database {
     conn: Arc<Mutex<Connection>>,
     path: PathBuf,
@@ -36,17 +39,26 @@ impl Database {
             std::fs::create_dir_all(parent)?;
         }
 
-        Self::new_sqlcipher(path)
+        #[cfg(unix)]
+        {
+            Self::new_sqlcipher(path)
+        }
+
+        #[cfg(windows)]
+        {
+            Self::new_sqlite(path)
+        }
     }
 
-    /// Create database with SQLCipher encryption
+    /// Create database with SQLCipher encryption (Unix only)
+    #[cfg(unix)]
     fn new_sqlcipher(path: PathBuf) -> Result<Self> {
         use crate::secrets::master_key::get_cached_master_key;
 
         // Get master key for database encryption
         // Note: has_pin() now uses OS keychain, so no circular dependency
         let master_key = get_cached_master_key()
-            .map_err(|e| CcmError::Unknown(format!("Failed to get master key: {}. Please run 'ccm auth set' first.", e)))?;
+            .map_err(|e| CcmError::Unknown(format!("Failed to get master key: {}. Please run 'ccm auth on' first.", e)))?;
 
         // Derive database encryption key from master key (64 hex chars)
         let db_key = hex::encode(&master_key);
@@ -74,8 +86,22 @@ impl Database {
         Ok(db)
     }
 
+    /// Create database with standard SQLite (Windows)
+    #[cfg(windows)]
+    fn new_sqlite(path: PathBuf) -> Result<Self> {
+        let conn = Connection::open(&path)?;
 
-    /// Initialize database schema with SQLCipher settings
+        let db = Self {
+            conn: Arc::new(Mutex::new(conn)),
+            path,
+        };
+
+        db.init_schema()?;
+        Ok(db)
+    }
+
+    /// Initialize database schema with SQLCipher settings (Unix)
+    #[cfg(unix)]
     fn init_schema_sqlcipher(&self, is_new_db: bool) -> Result<()> {
         let conn = self
             .conn
@@ -93,6 +119,20 @@ impl Database {
             // Set page size (must be set before creating tables)
             conn.pragma_update(None, "page_size", 4096)?;
         }
+
+        // Enable WAL mode
+        conn.pragma_update(None, "journal_mode", "WAL")?;
+
+        self.init_tables(&conn)?;
+        Ok(())
+    }
+
+    /// Initialize database schema (Windows / shared)
+    fn init_schema(&self) -> Result<()> {
+        let conn = self
+            .conn
+            .lock()
+            .map_err(|e| CcmError::Unknown(e.to_string()))?;
 
         // Enable WAL mode
         conn.pragma_update(None, "journal_mode", "WAL")?;

@@ -44,6 +44,12 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: sudo apt-get update && sudo apt-get install -y libsecret-1-dev
 
+      - name: Remove local config (use bundled dependencies)
+        shell: bash
+        run: |
+          # Remove local config.toml to use bundled SQLCipher/OpenSSL
+          rm -f .cargo/config.toml
+
       - name: Build
         run: cargo build --release --target ${{ matrix.target }}
 

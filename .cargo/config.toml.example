@@ -1,0 +1,30 @@
+# Cargo configuration for CCM
+# This file is gitignored - platform-specific setup required
+
+# ============================================
+# WINDOWS SETUP
+# ============================================
+# Copy this file to config.toml and update the paths:
+#   cp config.toml.example config.toml
+#
+# Then edit OPENSSL_DIR to your project root path
+
+[env]
+OPENSSL_NO_VENDOR = "1"
+OPENSSL_STATIC = "1"
+OPENSSL_DIR = "C:/path/to/ccm_rust"                    # ← Change this!
+OPENSSL_LIB_DIR = "C:/path/to/ccm_rust/lib"            # ← Change this!
+OPENSSL_INCLUDE_DIR = "C:/path/to/ccm_rust/include"    # ← Change this!
+
+# ============================================
+# LINUX/WSL SETUP
+# ============================================
+# Delete or rename config.toml:
+#   rm .cargo/config.toml
+# OR
+#   mv .cargo/config.toml .cargo/config.toml.windows
+#
+# Then install system OpenSSL:
+#   sudo apt-get install libssl-dev pkg-config
+#
+# No config.toml needed - cargo uses system libraries automatically
